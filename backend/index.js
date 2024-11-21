@@ -50,8 +50,8 @@ app.post('/books', async (request, response) => {
         return response.status(201).send(book);
     } catch (error) {
         //prints the error message in the server's console
-        console.log(error.message);
-        //imforms the client about the error
+        console.log(error.messaage.message);
+        //informs the client about the error
         response.status(500).send({message: error.message});
         
     }
@@ -69,14 +69,72 @@ app.get('/books', async (request, response) => {
             // no of books found
             count: books.length,
             // array of book object
-            data: books, 
+            data: books
         });
     } catch (error) {
-        console.log(error);
+        console.log(error.messaage);
         //the method send is currently sending a JSON object to the client
         response.status(500).send({message: error.message});
         
     }
+})
+
+//route to get the details of one book based on ID
+// to add a parameter to the route used colon :
+app.get('/books/:id', async (request, response) =>{
+    try {
+        const { id } = request.params;
+        const book = await Book.findById(id);
+        return response.status(200).json(book);
+    } catch (error) {
+        console.log(error.messaage);
+        response.status(500).send({message: error.message});
+    }
+})
+
+//route to update an book
+app.put('/books/:id', async (request, response) => {
+    try {
+        if (
+            !request.body.title ||
+            !request.body.author ||
+            !request.body.publishedYear 
+        ) {
+            return response.status(400).send({
+                message: "Send all fields required: title, author, publishedYear", 
+            })
+        }
+
+        const { id } = request.params;
+
+        const results = await Book.findByIdAndUpdate(id, request.body);
+
+        if(!results) {
+            return response.status(404).json({messaage: 'Book not found'});
+        }
+
+        return response.status(200).send({message: 'Book updated sucessfully'})
+
+    } catch (error) {
+        console.log(error.messaage);
+        response.status(500).send({message: error.message});
+        
+    }
+})
+
+//route to delete a book
+app.delete ('/books/:id', async (request, response) => {
+    try {
+        const { id } = request.params;
+        const result = await Book.findByIdAndDelete(id);
+        if (!result) {
+            return response.status(404).json({message: 'Book not found'})
+        }
+    } catch (error) {
+        console.log(error.messaage);
+        response.status(400).send({message: error.message});
+    }
+    return response.status(200).send({message: 'Book deleted sucessfully'})
 })
 
 /*
